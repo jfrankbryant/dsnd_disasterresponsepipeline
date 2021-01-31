@@ -39,6 +39,8 @@ def save_data(df, database_filename):
     engine = create_engine('sqlite:///' + database_filename)
     df.to_sql('categorized_messages', engine, index=False)
 
+    return engine
+
 
 def main():
     """This function was provided by Udacity.
