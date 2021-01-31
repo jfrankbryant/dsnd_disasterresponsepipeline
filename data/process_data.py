@@ -36,7 +36,7 @@ def clean_data(messages_df, categories_df):
 
 def save_data(df, database_filename):
     """Create a SQLite database and save the cleaned dataframe as a table."""
-    engine = create_engine('sqlite:///categorized_disaster_response_messages.db')
+    engine = create_engine('sqlite:///' + database_filename)
     df.to_sql('categorized_messages', engine, index=False)
 
 

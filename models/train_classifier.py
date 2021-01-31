@@ -23,14 +23,22 @@ def load_data(database_filepath):
     """ Takes a database filepath.
     Returns dataframe from a table in the database and a lemmatizer.
     """
-    engine = create_engine(database_filepath)
+    engine = create_engine('sqlite:///' + database_filepath)
     conn = sqlite3.connect(database_filepath)
-    df = pd.read_sql('SELECT * FROM categorized_messages', conn)
-    lemmatizer = WordNetLemmatizer()
+    X = df.message
+    Y = df[['related', 'request', 'offer', 'aid_related', 'medical_help', 'medical_products', 'search_and_rescue',
+       'security', 'military', 'child_alone', 'water', 'food', 'shelter', 'clothing', 'money', 'missing_people',
+       'refugees', 'death', 'other_aid', 'infrastructure_related', 'transport', 'buildings', 'electricity', 'tools',
+       'hospitals', 'shops', 'aid_centers', 'other_infrastructure', 'weather_related', 'floods', 'storm', 'fire',
+       'earthquake', 'cold', 'other_weather', 'direct_report']]
+
+    return X, Y, list(Y.columns)
+
 
 
 def tokenize(text):
     """ Takes text and returns tokens of single words."""
+    lemmatizer = WordNetLemmatizer()
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     tokens = word_tokenize(text)
     tokens = [lemmatizer.lemmatize(word) for word in tokens]
@@ -38,15 +46,13 @@ def tokenize(text):
     return tokens
 
 
-def build_model(X_train, y_train):
+def build_model():
     """ Returns a fitted pipeline."""
     pipeline = Pipeline([
             ('vect', CountVectorizer(tokenizer=tokenize)),
             ('tfidf', TfidfTransformer(norm='l1')),
             ('clf', MultiOutputClassifier(AdaBoostClassifier(random_state=42)))
             ])
-
-        pipeline.fit(X_train, y_train)
 
     return pipeline
 
@@ -56,15 +62,14 @@ def evaluate_model(model, X_test, Y_test, category_names):
     from the X test values.
     """
     y_pred = pipeline.predict(X_test)
-    ycols = list(y.columns)
 
-    print(classification_report(y_test, y_pred, target_names=ycols))
+    print(classification_report(Y_test, y_pred, target_names=category_names))
 
 
 def save_model(model, model_filepath):
     """Saves the fitted model above to use elsewhere."""
     #pickle export info from https://stackabuse.com/scikit-learn-save-and-restore-models/
-    with open(model_filepath, ‘wb’) as file:
+    with open(model_filepath, 'wb') as file:
         pickle.dump(model, file)
 
 def main():
