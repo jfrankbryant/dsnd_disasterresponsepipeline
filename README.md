@@ -44,9 +44,11 @@ Pickle
   process_data.py: Python script to clean and load data into a SQLite3 database
   disaster_messages.csv: initial messages data
   disaster_categories.csv: initial categories data
+  DisasterResponse.db: SQLite3 database with cleaned data stored in categorized_messages table
 
 #####Models Folder
-  train_classifier.py: Python script to train a model on clean data taken from a SQLite3 database
+  train_classifier.py: Python script to train a model using Pipeline and GridSearchCV on clean data taken from a SQLite3 database
+  classifier.pkl: saved model
 
 #####Prep Folder
   pickle_disasterresponse_model.pkl: saved model

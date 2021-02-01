@@ -25,6 +25,7 @@ def load_data(database_filepath):
     """
     engine = create_engine('sqlite:///' + database_filepath)
     conn = sqlite3.connect(database_filepath)
+    df = pd.read_sql('SELECT * FROM categorized_messages', conn)
     X = df.message
     Y = df[['related', 'request', 'offer', 'aid_related', 'medical_help', 'medical_products', 'search_and_rescue',
        'security', 'military', 'child_alone', 'water', 'food', 'shelter', 'clothing', 'money', 'missing_people',
@@ -47,14 +48,22 @@ def tokenize(text):
 
 
 def build_model():
-    """ Returns a fitted pipeline."""
+    """Returns a GridSearchCV pipeline."""
     pipeline = Pipeline([
             ('vect', CountVectorizer(tokenizer=tokenize)),
             ('tfidf', TfidfTransformer(norm='l1')),
             ('clf', MultiOutputClassifier(AdaBoostClassifier(random_state=42)))
             ])
 
-    return pipeline
+    parameters = {'vect__analyzer': ['word', 'char'],
+                  'tfidf__norm': ['l1', 'l2'],
+                  'clf__estimator': [AdaBoostClassifier(), KNeighborsClassifier()],
+                  'clf__n_jobs': [1, 3]
+}
+
+    cv = GridSearchCV(pipeline, param_grid=parameters, verbose=3)
+
+    return cv
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
